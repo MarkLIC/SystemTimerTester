@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace MultiCoreHighPerformanceTimer
 {
-    public partial class Form1 : Form
+    public sealed partial class Form1 : Form
     {
         private TimeMeasurement[] measurements;
         private readonly object locker = new object();
@@ -21,6 +21,7 @@ namespace MultiCoreHighPerformanceTimer
         public Form1()
         {
             InitializeComponent();
+            this.Text = this.Text + " " + Application.ProductVersion;
         }
 
         private Action GenerateActionForCore(int i, Barrier barrier, bool runCps)
@@ -105,6 +106,7 @@ namespace MultiCoreHighPerformanceTimer
             this.textBoxLog.Clear();
 
             int numProcessors = TimerTester.GetNumberOfProcessors();
+            this.logBuilder.Append("Program version: " + Application.ProductVersion + Environment.NewLine);
             this.logBuilder.Append("Number of cores: " + numProcessors + Environment.NewLine);
             this.logBuilder.Append("Stopwatch frequency (Hz): " + Stopwatch.Frequency + Environment.NewLine);
 
