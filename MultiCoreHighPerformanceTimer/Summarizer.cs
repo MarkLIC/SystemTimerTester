@@ -67,16 +67,17 @@ namespace MultiCoreHighPerformanceTimer
 
             if (this.variationCoefficients.Any())
             {
-                const double vcAllowableAverage = 0.15;
+                // 0.15 semi-arbitrarily chosen to be reasonable boundary, based on repeated trials and human observation
+                // But bumped it up to 0.25 to avoid false positives
+                const double vcAllowableAverage = 0.25;
                 double vcAverage = this.variationCoefficients.Average();
                 this.successful = this.successful && vcAverage < vcAllowableAverage;
                 richTextBox.AppendText("Variation coefficient average: ");
-                // 0.15 semi-arbitrarily chosen to be reasonable boundary, based on repeated trials and human observation
                 richTextBox.SelectionColor = vcAverage < vcAllowableAverage ? Color.Green : Color.Red;
                 richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
                 richTextBox.AppendText(vcAverage.ToString("F3") + Environment.NewLine);
 
-                const double vcAllowableMax = 0.3;
+                const double vcAllowableMax = 0.5;
                 double vcMax = this.variationCoefficients.Max();
                 richTextBox.AppendText("Variation coefficient max: ");
                 richTextBox.SelectionColor = vcMax < vcAllowableMax ? Color.Green : Color.Goldenrod;
@@ -137,7 +138,7 @@ namespace MultiCoreHighPerformanceTimer
             if (differences.Count > 1)
             {
                 var average = differences.Average();
-                var standardDeviation = Math.Sqrt(differences.Sum(d => (d - average) * (d - average)) / differences.Count - 1);
+                var standardDeviation = Math.Sqrt(differences.Sum(d => (d - average) * (d - average)) / (differences.Count - 1));
                 var cv = standardDeviation / average;
 
                 this.variationCoefficients.Add(cv);

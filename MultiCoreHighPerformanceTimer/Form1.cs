@@ -108,7 +108,7 @@ namespace MultiCoreHighPerformanceTimer
             this.logBuilder.Append("Number of cores: " + numProcessors + Environment.NewLine);
             this.logBuilder.Append("Stopwatch frequency (Hz): " + Stopwatch.Frequency + Environment.NewLine);
 
-            const int runMax = 5;
+            const int runMax = 10;
             for (int j = 0; j < runMax; j++)
             {
                 this.measurements = new TimeMeasurement[numProcessors];
