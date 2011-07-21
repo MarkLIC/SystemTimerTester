@@ -102,7 +102,7 @@
             this.Controls.Add(this.buttonRunTest);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Name = "Form1";
-            this.Text = "Multi-Core High Performance Timer Tester";
+            this.Text = "System Timer Tester";
             this.groupBoxSummary.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();

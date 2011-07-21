@@ -108,6 +108,18 @@ namespace MultiCoreHighPerformanceTimer
             // insert message before ok/bad
             richTextBox.Select(0, 0);
             richTextBox.SelectedText = "Overall status: ";
+
+            if (!this.successful)
+            {
+                string message = "The program has detected some poor timing results on your computer. " +
+                                 "It is normal for this to happen once in a while." + Environment.NewLine + Environment.NewLine +
+                                 "However, if you run the tests a few more times and are consistently receiving poor timing results, there may be applications running on your PC that consume too many resources and cause false positives.  " +
+                                 "First, try stopping other programs that are running.  " +
+                                 "If the poor timing results still persist, you may have an issue with your computer hardware or your BIOS.  " +
+                                 "Click the 'Copy results to clipboard' button to your right, and paste everything in an email to software@lafayetteinstrument.com with subject 'Timing results' for more help determining how to fix the issue.";
+
+                System.Windows.Forms.MessageBox.Show(message, "Poor timing results");
+            }
         }
 
         public void AddSynchronizedMeasurements(TimeMeasurement[] measurements)
