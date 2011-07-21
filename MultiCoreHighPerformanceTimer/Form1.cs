@@ -94,12 +94,8 @@ namespace MultiCoreHighPerformanceTimer
 
         private void buttonRunTest_Click(object sender, EventArgs e)
         {
+            var summarizer = new Summarizer();
             TimerTester.timeBeginPeriod(1);
-            var oldPriority = Process.GetCurrentProcess().PriorityClass;
-            if (this.checkBoxForcePriority.Checked)
-            {
-                Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.RealTime;
-            }
 
             this.textBoxLog.Clear();
 
@@ -116,12 +112,14 @@ namespace MultiCoreHighPerformanceTimer
             }
 
             this.RecordMeasurements();
+            summarizer.AddSynchronizedMeasurements(this.measurements);
 
             this.measurements = new TimeMeasurement[numProcessors];
             this.textBoxLog.AppendText(Environment.NewLine + "===Unsynchronized parallel task===" + Environment.NewLine);
             Parallel.Invoke(Enumerable.Range(0, numProcessors).Select(i => this.GenerateActionForCore(i, null)).ToArray());
 
             this.RecordMeasurements();
+            summarizer.AddUnsynchronizedMeasurements(this.measurements);
 
             this.measurements = new TimeMeasurement[numProcessors];
             this.textBoxLog.AppendText(Environment.NewLine + "===Serial task===" + Environment.NewLine);
@@ -132,8 +130,9 @@ namespace MultiCoreHighPerformanceTimer
 
             this.RecordMeasurements();
 
-            Process.GetCurrentProcess().PriorityClass = oldPriority;
             TimerTester.timeEndPeriod(1);
+
+            summarizer.Summarize(this.richTextBoxSummary);
         }
 
         private void RecordMeasurements()
@@ -149,6 +148,11 @@ namespace MultiCoreHighPerformanceTimer
                     this.textBoxLog.AppendText(String.Format("Core {0} swing: {1} ticks, {2:F10}s; on time: {3}" + Environment.NewLine, measurement.core, diff, (double)diff/Stopwatch.Frequency, TimeSpan.FromSeconds((double)measurement.stopwatchTimestamp/Stopwatch.Frequency)));
                 }
             }
+        }
+
+        private void buttonCopy_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(this.richTextBoxSummary.Text + Environment.NewLine + "~~~~~~" + Environment.NewLine + this.textBoxLog.Text);
         }
     }
 }

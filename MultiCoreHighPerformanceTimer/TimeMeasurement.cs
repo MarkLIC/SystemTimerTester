@@ -17,7 +17,7 @@ namespace MultiCoreHighPerformanceTimer
         
         public override string ToString()
         {
-            return String.Format("Core: {3}{4}, DateTime.Millisecond: {0}, Environment.TickCount: {1}, Stopwatch.TimeStamp: {2}, timeGetTime: {5}, CPS: {6}",
+            return String.Format("Core: {3}{4}, DateTime.Millisecond: {0}, Environment.TickCount: {1}, Stopwatch.TimeStamp: {2}, timeGetTime: {5}, CPmS: {6}",
                                  this.dateTimeMillisecond,
                                  this.envTickCount,
                                  this.stopwatchTimestamp,
