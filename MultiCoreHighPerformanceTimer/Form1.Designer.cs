@@ -51,12 +51,12 @@
             this.textBoxLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.textBoxLog.Location = new System.Drawing.Point(13, 191);
+            this.textBoxLog.Location = new System.Drawing.Point(13, 203);
             this.textBoxLog.Multiline = true;
             this.textBoxLog.Name = "textBoxLog";
             this.textBoxLog.ReadOnly = true;
             this.textBoxLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBoxLog.Size = new System.Drawing.Size(933, 353);
+            this.textBoxLog.Size = new System.Drawing.Size(933, 341);
             this.textBoxLog.TabIndex = 1;
             // 
             // groupBoxSummary
@@ -64,7 +64,7 @@
             this.groupBoxSummary.Controls.Add(this.richTextBoxSummary);
             this.groupBoxSummary.Location = new System.Drawing.Point(13, 43);
             this.groupBoxSummary.Name = "groupBoxSummary";
-            this.groupBoxSummary.Size = new System.Drawing.Size(933, 142);
+            this.groupBoxSummary.Size = new System.Drawing.Size(933, 154);
             this.groupBoxSummary.TabIndex = 2;
             this.groupBoxSummary.TabStop = false;
             this.groupBoxSummary.Text = "Summary";
@@ -77,7 +77,7 @@
             this.richTextBoxSummary.Location = new System.Drawing.Point(7, 20);
             this.richTextBoxSummary.Name = "richTextBoxSummary";
             this.richTextBoxSummary.ReadOnly = true;
-            this.richTextBoxSummary.Size = new System.Drawing.Size(920, 116);
+            this.richTextBoxSummary.Size = new System.Drawing.Size(920, 128);
             this.richTextBoxSummary.TabIndex = 0;
             this.richTextBoxSummary.Text = "";
             // 

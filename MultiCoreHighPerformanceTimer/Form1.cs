@@ -14,7 +14,7 @@ namespace MultiCoreHighPerformanceTimer
 {
     public sealed partial class Form1 : Form
     {
-        private TimeMeasurement[] measurements;
+        private readonly List<TimeMeasurement> measurements = new List<TimeMeasurement>();
         private readonly object locker = new object();
         private readonly StringBuilder logBuilder= new StringBuilder();
 
@@ -91,7 +91,7 @@ namespace MultiCoreHighPerformanceTimer
 
                                lock (this.locker)
                                {
-                                   this.measurements[i] = measurement;
+                                   this.measurements.Add(measurement);
                                }
                            }
                        };
@@ -113,7 +113,7 @@ namespace MultiCoreHighPerformanceTimer
             const int runMax = 10;
             for (int j = 0; j < runMax; j++)
             {
-                this.measurements = new TimeMeasurement[numProcessors];
+                this.measurements.Clear();
 
                 this.logBuilder.Append(Environment.NewLine + "===Synchronized parallel task [" + (j + 1) + '/' + runMax + "]===" + Environment.NewLine);
 
@@ -125,18 +125,18 @@ namespace MultiCoreHighPerformanceTimer
                 this.RecordMeasurements();
                 summarizer.AddSynchronizedMeasurements(this.measurements);
 
-                this.measurements = new TimeMeasurement[numProcessors];
+                this.measurements.Clear();
                 this.logBuilder.Append(Environment.NewLine + "===Unsynchronized parallel task [" + (j + 1) + '/' + runMax + "]===" + Environment.NewLine);
                 Parallel.Invoke(Enumerable.Range(0, numProcessors).Select(i => this.GenerateActionForCore(i, null, true)).ToArray());
 
                 this.RecordMeasurements();
                 summarizer.AddUnsynchronizedMeasurements(this.measurements);
 
-                this.measurements = new TimeMeasurement[numProcessors];
+                this.measurements.Clear();
                 this.logBuilder.Append(Environment.NewLine + "===Serial task [" + (j + 1) + '/' + runMax + "]===" + Environment.NewLine);
                 for (int i = 0; i < numProcessors; i++)
                 {
-                    this.GenerateActionForCore(i, null, false)();
+                    this.GenerateActionForCore((i + j) % numProcessors, null, false)();
                 }
 
                 this.RecordMeasurements();

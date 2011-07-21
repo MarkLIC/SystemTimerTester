@@ -10,6 +10,7 @@ namespace MultiCoreHighPerformanceTimer
     internal class Summarizer
     {
         private bool successful = true;
+        private bool serialTasksAlwaysAscending = true;
 
         private readonly List<double> synchronizedDifferences = new List<double>();
         private readonly List<double> unsynchronizedDifferences = new List<double>();
@@ -90,6 +91,13 @@ namespace MultiCoreHighPerformanceTimer
                 richTextBox.AppendText("Variation coefficient max: N/A" + Environment.NewLine);
             }
 
+            richTextBox.AppendText("Counter always increasing in serial task: ");
+            richTextBox.SelectionColor = this.serialTasksAlwaysAscending ? Color.Green : Color.Red;
+            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+            richTextBox.AppendText((this.serialTasksAlwaysAscending ? "YES" : "NO") + Environment.NewLine);
+
+            this.successful = this.successful && this.serialTasksAlwaysAscending;
+
             // insert ok/bad at beginning
             richTextBox.Select(0, 0);
             if (this.successful)
@@ -122,21 +130,21 @@ namespace MultiCoreHighPerformanceTimer
             }
         }
 
-        public void AddSynchronizedMeasurements(TimeMeasurement[] measurements)
+        public void AddSynchronizedMeasurements(IEnumerable<TimeMeasurement> measurements)
         {
             long minStopwatch = measurements.Min(m => m.stopwatchTimestamp);
 
             this.synchronizedDifferences.AddRange(measurements.Where(m => m.stopwatchTimestamp > minStopwatch).Select(m => (m.stopwatchTimestamp - minStopwatch)/(double)Stopwatch.Frequency));
         }
 
-        public void AddUnsynchronizedMeasurements(TimeMeasurement[] measurements)
+        public void AddUnsynchronizedMeasurements(IEnumerable<TimeMeasurement> measurements)
         {
             long minStopwatch = measurements.Min(m => m.stopwatchTimestamp);
 
             this.unsynchronizedDifferences.AddRange(measurements.Where(m => m.stopwatchTimestamp > minStopwatch).Select(m => (m.stopwatchTimestamp - minStopwatch)/(double)Stopwatch.Frequency));
         }
 
-        public void AddSerialMeasurements(TimeMeasurement[] measurements)
+        public void AddSerialMeasurements(IEnumerable<TimeMeasurement> measurements)
         {
             var differences = new List<long>();
 
@@ -155,6 +163,8 @@ namespace MultiCoreHighPerformanceTimer
 
                 this.variationCoefficients.Add(cv);
             }
+
+            this.serialTasksAlwaysAscending = this.serialTasksAlwaysAscending && differences.All(d => d > 0);
         }
     }
 }
