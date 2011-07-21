@@ -16,13 +16,14 @@ namespace MultiCoreHighPerformanceTimer
     {
         private TimeMeasurement[] measurements;
         private readonly object locker = new object();
+        private readonly StringBuilder logBuilder= new StringBuilder();
 
         public Form1()
         {
             InitializeComponent();
         }
 
-        private Action GenerateActionForCore(int i, Barrier barrier)
+        private Action GenerateActionForCore(int i, Barrier barrier, bool runCps)
         {
             return () =>
                        {
@@ -67,22 +68,25 @@ namespace MultiCoreHighPerformanceTimer
                                    barrier.SignalAndWait();
                                }
 
-                               uint start = TimerTester.timeGetTime();
-                               uint waitFor = start + 1;
-                               uint stopAt = start + 2;
-
-                               while (TimerTester.timeGetTime() < waitFor)
+                               if (runCps)
                                {
-                                   // do nothing
-                               }
+                                   uint start = TimerTester.timeGetTime();
+                                   uint waitFor = start + 1;
+                                   uint stopAt = start + 2;
 
-                               ulong cps = 0;
-                               while (TimerTester.timeGetTime() < stopAt)
-                               {
-                                   cps++;
-                               }
+                                   while (TimerTester.timeGetTime() < waitFor)
+                                   {
+                                       // do nothing
+                                   }
 
-                               measurement.checksPerMs = cps;
+                                   ulong cps = 0;
+                                   while (TimerTester.timeGetTime() < stopAt)
+                                   {
+                                       cps++;
+                                   }
+
+                                   measurement.checksPerMs = cps;
+                               }
 
                                lock (this.locker)
                                {
@@ -100,37 +104,45 @@ namespace MultiCoreHighPerformanceTimer
             this.textBoxLog.Clear();
 
             int numProcessors = TimerTester.GetNumberOfProcessors();
-            this.measurements = new TimeMeasurement[numProcessors];
+            this.logBuilder.Append("Number of cores: " + numProcessors + Environment.NewLine);
+            this.logBuilder.Append("Stopwatch frequency (Hz): " + Stopwatch.Frequency + Environment.NewLine);
 
-            this.textBoxLog.AppendText("Number of cores: " + numProcessors + Environment.NewLine);
-            this.textBoxLog.AppendText("Stopwatch frequency (Hz): " + Stopwatch.Frequency + Environment.NewLine);
-            this.textBoxLog.AppendText(Environment.NewLine + "===Synchronized parallel task===" + Environment.NewLine);
-
-            using (var barrier = new Barrier(numProcessors))
+            const int runMax = 5;
+            for (int j = 0; j < runMax; j++)
             {
-                Parallel.Invoke(Enumerable.Range(0, numProcessors).Select(i => this.GenerateActionForCore(i, barrier)).ToArray());
+                this.measurements = new TimeMeasurement[numProcessors];
+
+                this.logBuilder.Append(Environment.NewLine + "===Synchronized parallel task [" + (j + 1) + '/' + runMax + "]===" + Environment.NewLine);
+
+                using (var barrier = new Barrier(numProcessors))
+                {
+                    Parallel.Invoke(Enumerable.Range(0, numProcessors).Select(i => this.GenerateActionForCore(i, barrier, true)).ToArray());
+                }
+
+                this.RecordMeasurements();
+                summarizer.AddSynchronizedMeasurements(this.measurements);
+
+                this.measurements = new TimeMeasurement[numProcessors];
+                this.logBuilder.Append(Environment.NewLine + "===Unsynchronized parallel task [" + (j + 1) + '/' + runMax + "]===" + Environment.NewLine);
+                Parallel.Invoke(Enumerable.Range(0, numProcessors).Select(i => this.GenerateActionForCore(i, null, true)).ToArray());
+
+                this.RecordMeasurements();
+                summarizer.AddUnsynchronizedMeasurements(this.measurements);
+
+                this.measurements = new TimeMeasurement[numProcessors];
+                this.logBuilder.Append(Environment.NewLine + "===Serial task [" + (j + 1) + '/' + runMax + "]===" + Environment.NewLine);
+                for (int i = 0; i < numProcessors; i++)
+                {
+                    this.GenerateActionForCore(i, null, false)();
+                }
+
+                this.RecordMeasurements();
+                summarizer.AddSerialMeasurements(this.measurements);
             }
-
-            this.RecordMeasurements();
-            summarizer.AddSynchronizedMeasurements(this.measurements);
-
-            this.measurements = new TimeMeasurement[numProcessors];
-            this.textBoxLog.AppendText(Environment.NewLine + "===Unsynchronized parallel task===" + Environment.NewLine);
-            Parallel.Invoke(Enumerable.Range(0, numProcessors).Select(i => this.GenerateActionForCore(i, null)).ToArray());
-
-            this.RecordMeasurements();
-            summarizer.AddUnsynchronizedMeasurements(this.measurements);
-
-            this.measurements = new TimeMeasurement[numProcessors];
-            this.textBoxLog.AppendText(Environment.NewLine + "===Serial task===" + Environment.NewLine);
-            for (int i = 0; i < numProcessors; i++)
-            {
-                this.GenerateActionForCore(i, null)();
-            }
-
-            this.RecordMeasurements();
 
             TimerTester.timeEndPeriod(1);
+
+            this.textBoxLog.Text = this.logBuilder.ToString();
 
             summarizer.Summarize(this.richTextBoxSummary);
         }
@@ -139,13 +151,13 @@ namespace MultiCoreHighPerformanceTimer
         {
             lock (this.locker)
             {
-                this.textBoxLog.AppendText(String.Join(Environment.NewLine, this.measurements.Select(m => m.ToString())) + Environment.NewLine);
+                this.logBuilder.Append(String.Join(Environment.NewLine, this.measurements.Select(m => m.ToString())) + Environment.NewLine);
 
                 long minStopwatch = this.measurements.Min(m => m.stopwatchTimestamp);
                 foreach (var measurement in this.measurements)
                 {
                     long diff = measurement.stopwatchTimestamp - minStopwatch;
-                    this.textBoxLog.AppendText(String.Format("Core {0} swing: {1} ticks, {2:F10}s; on time: {3}" + Environment.NewLine, measurement.core, diff, (double)diff/Stopwatch.Frequency, TimeSpan.FromSeconds((double)measurement.stopwatchTimestamp/Stopwatch.Frequency)));
+                    this.logBuilder.Append(String.Format("Core {0} swing: {1} ticks, {2:F10}s; on time: {3}" + Environment.NewLine, measurement.core, diff, (double)diff/Stopwatch.Frequency, TimeSpan.FromSeconds((double)measurement.stopwatchTimestamp/Stopwatch.Frequency)));
                 }
             }
         }
