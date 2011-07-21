@@ -18,57 +18,71 @@ namespace MultiCoreHighPerformanceTimer
         public void Summarize(System.Windows.Forms.RichTextBox richTextBox)
         {
             richTextBox.Clear();
-            richTextBox.AppendText("Overall status: ");
 
+            const double syncAllowableAverage = 0.0003;
+            double syncAverage = this.synchronizedDifferences.Average();
+            this.successful = this.successful && syncAverage < syncAllowableAverage;
+            richTextBox.AppendText("Synchronized average: ");
+            richTextBox.SelectionColor = syncAverage < syncAllowableAverage ? Color.Green : Color.Red;
+            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+            richTextBox.AppendText(syncAverage.ToString("F10") + 's' + Environment.NewLine);
+
+            const double syncAllowableMax = 0.0003;
+            double syncMax = this.synchronizedDifferences.Max();
+            richTextBox.AppendText("Synchronized max: ");
+            richTextBox.SelectionColor = syncMax < syncAllowableMax ? Color.Green : Color.Goldenrod;
+            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+            richTextBox.AppendText(syncMax.ToString("F10") + 's' + Environment.NewLine);
+
+            const double unsyncAllowableAverage = 0.001;
+            double unsyncAverage = this.unsynchronizedDifferences.Average();
+            this.successful = this.successful && unsyncAverage < unsyncAllowableAverage;
+            richTextBox.AppendText("Unsynchronized average: ");
+            richTextBox.SelectionColor = unsyncAverage < unsyncAllowableAverage ? Color.Green : Color.Red;
+            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+            richTextBox.AppendText(unsyncAverage.ToString("F10") + 's' + Environment.NewLine);
+
+            const double unsyncAllowableMax = 0.001;
+            double unsyncMax = this.unsynchronizedDifferences.Max();
+            richTextBox.AppendText("Unsynchronized max: ");
+            richTextBox.SelectionColor = unsyncMax < unsyncAllowableMax ? Color.Green : Color.Goldenrod;
+            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+            richTextBox.AppendText(unsyncMax.ToString("F10") + 's' + Environment.NewLine);
+
+            const double vcAllowableAverage = 0.15;
+            double vcAverage = this.variationCoefficients.Average();
+            this.successful = this.successful && vcAverage < vcAllowableAverage;
+            richTextBox.AppendText("Variation coefficient average: ");
+            // 0.15 semi-arbitrarily chosen to be reasonable boundary, based on repeated trials and human observation
+            richTextBox.SelectionColor = vcAverage < vcAllowableAverage ? Color.Green : Color.Red;
+            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+            richTextBox.AppendText(vcAverage.ToString("F3") + Environment.NewLine);
+
+            const double vcAllowableMax = 0.3;
+            double vcMax = this.variationCoefficients.Max();
+            richTextBox.AppendText("Variation coefficient max: ");
+            richTextBox.SelectionColor = vcMax < vcAllowableMax ? Color.Green : Color.Goldenrod;
+            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
+            richTextBox.AppendText(vcMax.ToString("F3") + Environment.NewLine);
+
+            // insert ok/bad at beginning
+            richTextBox.Select(0, 0);
             if (this.successful)
             {
                 richTextBox.SelectionColor = Color.Green;
                 richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
-                richTextBox.AppendText("OK" + Environment.NewLine);
+                richTextBox.SelectedText= "OK" + Environment.NewLine;
             }
             else
             {
                 richTextBox.SelectionColor = Color.Red;
                 richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
-                richTextBox.AppendText("BAD" + Environment.NewLine);
+                richTextBox.SelectedText = "BAD" + Environment.NewLine;
             }
 
-            double syncAverage = this.synchronizedDifferences.Average();
-            richTextBox.AppendText("Synchronized average: ");
-            richTextBox.SelectionColor = syncAverage < 0.0001 ? Color.Green : Color.Red;
-            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
-            richTextBox.AppendText(syncAverage.ToString("F10") + 's' + Environment.NewLine);
-
-            double syncMax = this.synchronizedDifferences.Max();
-            richTextBox.AppendText("Synchronized max: ");
-            richTextBox.SelectionColor = syncMax < 0.0001 ? Color.Green : Color.Goldenrod;
-            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
-            richTextBox.AppendText(syncMax.ToString("F10") + 's' + Environment.NewLine);
-
-            double unsyncAverage = this.unsynchronizedDifferences.Average();
-            richTextBox.AppendText("Unsynchronized average: ");
-            richTextBox.SelectionColor = unsyncAverage < 0.001 ? Color.Green : Color.Red;
-            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
-            richTextBox.AppendText(unsyncAverage.ToString("F10") + 's' + Environment.NewLine);
-
-            double unsyncMax = this.unsynchronizedDifferences.Max();
-            richTextBox.AppendText("Unsynchronized max: ");
-            richTextBox.SelectionColor = unsyncMax < 0.001 ? Color.Green : Color.Goldenrod;
-            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
-            richTextBox.AppendText(unsyncMax.ToString("F10") + 's' + Environment.NewLine);
-
-            double vcAverage = this.variationCoefficients.Average();
-            richTextBox.AppendText("Variation coefficient average: ");
-            // 0.15 semi-arbitrarily chosen to be reasonable boundary, based on repeated trials and human observation
-            richTextBox.SelectionColor = vcAverage < 0.15 ? Color.Green : Color.Red;
-            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
-            richTextBox.AppendText(vcAverage.ToString("F3") + Environment.NewLine);
-
-            double vcMax = this.variationCoefficients.Max();
-            richTextBox.AppendText("Variation coefficient max: ");
-            richTextBox.SelectionColor = vcMax < 0.3 ? Color.Green : Color.Goldenrod;
-            richTextBox.SelectionFont = new Font(richTextBox.Font, FontStyle.Bold);
-            richTextBox.AppendText(vcMax.ToString("F3") + Environment.NewLine);
+            // insert message before ok/bad
+            richTextBox.Select(0, 0);
+            richTextBox.SelectedText = "Overall status: ";
         }
 
         public void AddSynchronizedMeasurements(TimeMeasurement[] measurements)

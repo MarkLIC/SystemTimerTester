@@ -98,6 +98,7 @@ namespace MultiCoreHighPerformanceTimer
 
         private void buttonRunTest_Click(object sender, EventArgs e)
         {
+            this.buttonRunTest.Enabled = false;
             var summarizer = new Summarizer();
             TimerTester.timeBeginPeriod(1);
 
@@ -145,6 +146,8 @@ namespace MultiCoreHighPerformanceTimer
             this.textBoxLog.Text = this.logBuilder.ToString();
 
             summarizer.Summarize(this.richTextBoxSummary);
+            this.logBuilder.Clear();
+            this.buttonRunTest.Enabled = true;
         }
 
         private void RecordMeasurements()
