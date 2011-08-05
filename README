@@ -1,0 +1,9 @@
+This utility is designed to help determine if a PC is susceptible to "timer
+drift" across multiple cores.  We had at least one customer whose PC had this
+issue, and as a result when he was using an application that used the
+Performance Counter under Windows XP, his timing values were sometimes out of
+order.
+
+To build, simply open MultiCoreHighPerformanceTimer.sln and build (under VS2010).
+
+This project depends on the .NET 4 Client Profile.
